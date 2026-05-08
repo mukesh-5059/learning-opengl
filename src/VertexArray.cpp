@@ -1,8 +1,9 @@
-#include "VertexArray.hpp"
 #include <glad/glad.h>
 
+#include "VertexArray.hpp"
 
-void VertexArrayLayout::push(unsigned int type, unsigned int count, bool normalized){
+
+void VertexArrayLayout::add(unsigned int type, unsigned int count, bool normalized){
     unsigned int s = count;
     switch(type){
         case GL_FLOAT: s *= sizeof(float); break;
@@ -35,7 +36,11 @@ void VertexArray::bind(){
     glBindVertexArray(rendererId);
 }
 
-VertexArray::~VertexArray(){
+void VertexArray::unbind(){
+    glBindVertexArray(0);
+}
 
+VertexArray::~VertexArray(){
+    glDeleteVertexArrays(1, &rendererId);
 }
 

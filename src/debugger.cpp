@@ -1,4 +1,5 @@
 #include "glad/glad.h"
+
 #include <iostream>
 
 void APIENTRY glDebugOutput(GLenum source, 

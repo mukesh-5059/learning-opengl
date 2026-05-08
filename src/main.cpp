@@ -1,10 +1,11 @@
-#include "utils.hpp"
+#include <glad/glad.h>
 #include "GLFW/glfw3.h"
 
 #include <iostream>
 
 #include "IndexBuffer.hpp"
 #include "VertexArray.hpp"
+#include "Shader.hpp"
 
 void enableDebugger();
 
@@ -41,12 +42,7 @@ int main(void)
            0.5,  0.5, 1.0, 1.0,
          -0.5, 0.5,-1.0, 1.0
     };
-    float pos2[8] = {
-         -1.0, -1.0,
-          1.0, -1.0,
-          1.0, 1.0,
-         -1.0, 1.0
-    };
+
     unsigned int indices[] = {
         0, 1, 2,
         2, 3, 0
@@ -55,24 +51,17 @@ int main(void)
     VertexArray va1;
     VertexBuffer vb(pos, 16 * sizeof(float));
     VertexArrayLayout vl;
-    vl.push(GL_FLOAT, 2, GL_FALSE);
-    vl.push(GL_FLOAT, 2, GL_FALSE);
+    vl.add(GL_FLOAT, 2, GL_FALSE);
+    vl.add(GL_FLOAT, 2, GL_FALSE);
     va1.bindLayout(vb, vl);
     va1.bind();
 
     IndexBuffer ibo(indices, 6);
 
-    std::string vertexShader, fragmentShader;
-    std::cout << "Loading vertex shader:" << std::endl;
-    loadShader("res/shaders/vertex.shader", vertexShader);
-    std::cout << "Loading fragment shader:" << std::endl;
-    loadShader("res/shaders/fragment.shader", fragmentShader);
+    ShaderProgram shader("res/shaders/vertex.shader", "res/shaders/fragment.shader");
+    shader.bind();
 
-
-    unsigned int prog = createProgram(vertexShader, fragmentShader);
-    glUseProgram(prog);
-
-    int location = glGetUniformLocation(prog, "uColor");
+    int location = shader.getUniformLocation("uColor");
     
     float r = 0.0;
     while (!glfwWindowShouldClose(window) )
@@ -84,14 +73,11 @@ int main(void)
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
         if(r >=1.0) r = 0.0;
         r += 0.05;
-       // if(arr == vao1) arr = vao2;
-       // else arr = vao1;
 
         glfwSwapBuffers(window);
 
         glfwPollEvents();
     }
-    glDeleteProgram(prog);
 
     glfwTerminate();
     return 0;
