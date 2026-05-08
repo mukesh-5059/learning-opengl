@@ -1,6 +1,10 @@
 #include "utils.hpp"
 #include "GLFW/glfw3.h"
+
 #include <iostream>
+
+#include "IndexBuffer.hpp"
+#include "VertexArray.hpp"
 
 void enableDebugger();
 
@@ -31,11 +35,11 @@ int main(void)
 
     enableDebugger();  //debugging line
 
-    float pos[8] = {
-         -0.5, -0.5,
-         0.5, -0.5,
-         0.5, 0.5,
-         -0.5, 0.5
+    float pos[16] = {
+          -0.5, -0.5, -1.0, -1.0,
+           0.5, -0.5,  1.0, -1.0,
+           0.5,  0.5, 1.0, 1.0,
+         -0.5, 0.5,-1.0, 1.0
     };
     float pos2[8] = {
          -1.0, -1.0,
@@ -48,32 +52,15 @@ int main(void)
         2, 3, 0
     };
 
-    unsigned int vao1;
-    glGenVertexArrays(1, &vao1);
-    glBindVertexArray(vao1);
+    VertexArray va1;
+    VertexBuffer vb(pos, 16 * sizeof(float));
+    VertexArrayLayout vl;
+    vl.push(GL_FLOAT, 2, GL_FALSE);
+    vl.push(GL_FLOAT, 2, GL_FALSE);
+    va1.bindLayout(vb, vl);
+    va1.bind();
 
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), pos, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-    glEnableVertexAttribArray(0);
-
-    unsigned int vao2;
-    glGenVertexArrays(1, &vao2);
-    glBindVertexArray(vao2);
-
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), pos2, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-    glEnableVertexAttribArray(0);
-
-    unsigned int ibo;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
-
+    IndexBuffer ibo(indices, 6);
 
     std::string vertexShader, fragmentShader;
     std::cout << "Loading vertex shader:" << std::endl;
@@ -85,11 +72,9 @@ int main(void)
     unsigned int prog = createProgram(vertexShader, fragmentShader);
     glUseProgram(prog);
 
-    int location = glad_glGetUniformLocation(prog, "uColor");
+    int location = glGetUniformLocation(prog, "uColor");
     
     float r = 0.0;
-    unsigned int arr = vao2; 
-    glBindVertexArray(arr);
     while (!glfwWindowShouldClose(window) )
     {
         glClear(GL_COLOR_BUFFER_BIT);
