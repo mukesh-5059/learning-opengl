@@ -8,7 +8,9 @@ class ShaderProgram{
 
     public:
     ShaderProgram(std::string vsPath, std::string fsPath);
-    void bind();
     int getUniformLocation(std::string uniform);
+    void setVec4f(float v0, float v1, float v2, float v3);
+
+    void bind();
     ~ShaderProgram();
 };

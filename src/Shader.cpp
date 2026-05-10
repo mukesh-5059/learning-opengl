@@ -30,16 +30,16 @@ static unsigned int compileShader(unsigned int type, const std::string& source){
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
     if(!result){
-       // int len;
-       // glGetShaderiv(id, GL_INFO_LOG_LENGTH, &len);
-       // char message[len];
-       // glGetShaderInfoLog(id, len, &len, message);
-       // 
-       // std::cout << "Failed to compile " <<
-       //             ((type == GL_VERTEX_SHADER)? "Vertex ":"Fragment ") <<
-       //             "Shader" << std::endl;
-       // std::cout << message << std::endl;
-       // glDeleteShader(id);
+        int len;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &len);
+        char message[len];
+        glGetShaderInfoLog(id, len, &len, message);
+        
+        std::cout << "Failed to compile " <<
+                    ((type == GL_VERTEX_SHADER)? "Vertex ":"Fragment ") <<
+                    "Shader" << std::endl;
+        std::cout << message << std::endl;
+        glDeleteShader(id);
         return 0;
     }
  
@@ -98,6 +98,11 @@ int ShaderProgram::getUniformLocation(std::string uniform){
     if(location == -1) std::cout << "Warning: Uniform '" << uniform << "' does not exist." << std::endl;
     uniforms[uniform] = location;
     return location;
+}
+
+void ShaderProgram::setVec4f(float v0, float v1, float v2, float v3){
+    int location = this->getUniformLocation("uColor");
+    glUniform4f(location, v0, v1, v2, v3);
 }
 
 ShaderProgram::~ShaderProgram(){

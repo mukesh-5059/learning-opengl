@@ -1,8 +1,10 @@
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 
-#include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
+#include "StbImage.h"
 
+#include "Renderer.hpp"
 #include "IndexBuffer.hpp"
 #include "VertexArray.hpp"
 #include "Shader.hpp"
@@ -11,30 +13,7 @@ void enableDebugger();
 
 int main(void)
 {
-    GLFWwindow* window;
-    if (!glfwInit())
-        return -1;
-
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);  //debugging line
-
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window)
-    { 
-        glfwTerminate();
-        return -1; 
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(5);
-
-    int version = gladLoadGL();
-    if (version == 0) {
-        std::cout << "Failed to initialize OpenGL context\n" << std::endl;
-        return -1;
-    }
-    std::cout << "\nloaded " << glGetString(GL_VERSION) << std::endl;
-
-    enableDebugger();  //debugging line
+    Renderer renderer(640, 480);
 
     float pos[16] = {
           -0.5, -0.5, -1.0, -1.0,
@@ -43,38 +22,45 @@ int main(void)
          -0.5, 0.5,-1.0, 1.0
     };
 
+    float vertices[18] = {
+    // positions         // colors
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+    }; 
+
     unsigned int indices[] = {
-        0, 1, 2,
-        2, 3, 0
+        0, 1, 2
     };
 
     VertexArray va1;
-    VertexBuffer vb(pos, 16 * sizeof(float));
+    VertexBuffer vb(vertices, 18 * sizeof(float));
     VertexArrayLayout vl;
-    vl.add(GL_FLOAT, 2, GL_FALSE);
-    vl.add(GL_FLOAT, 2, GL_FALSE);
+    vl.add(GL_FLOAT, 3, GL_FALSE);
+    vl.add(GL_FLOAT, 3, GL_FALSE);
     va1.bindLayout(vb, vl);
     va1.bind();
 
-    IndexBuffer ibo(indices, 6);
+    IndexBuffer ibo(indices, 3);
+    ibo.bind();
 
     ShaderProgram shader("res/shaders/vertex.shader", "res/shaders/fragment.shader");
     shader.bind();
 
-    int location = shader.getUniformLocation("uColor");
+    
     
     float r = 0.0;
-    while (!glfwWindowShouldClose(window) )
+    while (!glfwWindowShouldClose(renderer.getWindow()) )
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.clear();
 
-        glUniform4f(location, r, 0.1, 0.2, 0.5);
+       // shader.setVec4f(r, 0.0, 0.0, 1.0);
         
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+        glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
         if(r >=1.0) r = 0.0;
         r += 0.05;
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(renderer.getWindow());
 
         glfwPollEvents();
     }
