@@ -64,7 +64,8 @@ unsigned int createProgram(const std::string& vertex, const std::string& fragmen
 }
 
 
-ShaderProgram::ShaderProgram(std::string vsPath, std::string fsPath){
+ShaderProgram::ShaderProgram(std::string vsPath, std::string fsPath)
+ : rendererId(0){
     rendererId = glCreateProgram();
     std::string vertex, fragment;
 
@@ -100,9 +101,14 @@ int ShaderProgram::getUniformLocation(std::string uniform){
     return location;
 }
 
-void ShaderProgram::setVec4f(float v0, float v1, float v2, float v3){
-    int location = this->getUniformLocation("uColor");
+void ShaderProgram::setVec4f(std::string uniform, float v0, float v1, float v2, float v3){
+    int location = this->getUniformLocation(uniform);
     glUniform4f(location, v0, v1, v2, v3);
+}
+
+void ShaderProgram::setInt(std::string uniform, int n){
+    int location = this->getUniformLocation(uniform);
+    glUniform1i(location, n);
 }
 
 ShaderProgram::~ShaderProgram(){
