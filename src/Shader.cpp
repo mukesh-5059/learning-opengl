@@ -5,6 +5,15 @@
 
 #include "Shader.hpp"
 
+void printMat4(glm::mat4 matrix){
+    matrix = glm::transpose(matrix);
+    std::cout << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << std::endl;
+    std::cout << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << std::endl;
+    std::cout << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3] << std::endl;
+    std::cout << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3] << std::endl;
+
+}
+
 static void loadShader(const std::string& filePath, std::string& shader){
     std::ifstream file(filePath);
 
@@ -109,6 +118,11 @@ void ShaderProgram::setVec4f(std::string uniform, float v0, float v1, float v2, 
 void ShaderProgram::setInt(std::string uniform, int n){
     int location = this->getUniformLocation(uniform);
     glUniform1i(location, n);
+}
+
+void ShaderProgram::setMat4f(std::string uniform, glm::mat4 &mat){
+    int location = this->getUniformLocation(uniform);
+    glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]);
 }
 
 ShaderProgram::~ShaderProgram(){

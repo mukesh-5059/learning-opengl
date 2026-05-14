@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <iostream>
 
-Renderer::Renderer(int width, int height){
+Renderer::Renderer(int width, int height)
+ : width(width), height(height){
     if (!glfwInit())
         exit(-1);
 
@@ -17,7 +18,7 @@ Renderer::Renderer(int width, int height){
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(5);
+    glfwSwapInterval(1);
 
     int version = gladLoadGL();
     if (version == 0) {

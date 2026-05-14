@@ -1,5 +1,7 @@
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Renderer.hpp"
 #include "IndexBuffer.hpp"
@@ -20,20 +22,21 @@ int main(void)
          -0.5, 0.5, 0.0, 1.0
     };
 
-    float vertices[24] = {
-    // positions                         // colors
-      0.5f,  -0.5f,  0.0f,   1.0f,  0.0f,  0.0f, 0.0,  0.0,   // bottom right
-     -0.5f,  -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,1.0, 0.0,  // bottom left
-     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,0.5, 1.0   // top 
+     float vertices[32] = {
+    // positions          // colors           // texture coords
+     0.5f,  0.5f, -4.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, -4.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, -2.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, -2.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     }; 
 
     unsigned int indices[] = {
-        0, 1, 2
-       // 2, 3, 0
+        0, 1, 2,
+        2, 3, 0
     };
 
     VertexArray va1;
-    VertexBuffer vb(vertices, 3 * 8 * sizeof(float));
+    VertexBuffer vb(vertices, 4 * 8 * sizeof(float));
     VertexArrayLayout vl;
     vl.add(GL_FLOAT, 3, GL_FALSE);
     vl.add(GL_FLOAT, 3, GL_FALSE);
@@ -47,14 +50,27 @@ int main(void)
     texture2.bind(1);
     texture1.bind();
 
-    IndexBuffer ibo(indices, 3);
+    IndexBuffer ibo(indices, 6);
     ibo.bind();
 
     ShaderProgram shader("res/shaders/vertex.shader", "res/shaders/fragment.shader");
     shader.bind();
 
+    glm::mat4 trans(1.0);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f),
+                     (float)renderer.getWidth()/(float)renderer.getHeight(), 0.1f, 100.0f);
+    //glm::mat4 proj = glm::ortho(-1.0, 1.0,
+    //                 -0.5625, 0.5625, -1.0, 1.0);
+    //trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    //printMat4(proj);
+    
+
     shader.setInt("u_Texture1", 0);
     shader.setInt("u_Texture2", 1);
+    shader.setMat4f("u_MVP", proj);
+
+    //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+    shader.setMat4f("u_Rotation", trans);
     
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -65,6 +81,8 @@ int main(void)
         renderer.clear();
 
        // shader.setVec4f(r, 0.0, 0.0, 1.0);
+       //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 1.0f));
+       //shader.setMat4f("u_Rotation", trans);
         
         glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
         //if(r >=1.0) r = 0.0;

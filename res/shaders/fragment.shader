@@ -11,6 +11,6 @@ out vec4 color;
 
 void main(){
    //color = vec4(1.0, 0.0, 0.0, 1.0);
-   vec4 texColor = texture(u_Texture1, textureCords) * texture(u_Texture2, 1-textureCords);
+   vec4 texColor = texture(u_Texture1, textureCords) * texture(u_Texture2, textureCords);
    color = texColor;
 }
