@@ -2,6 +2,7 @@
 #include "GLFW/glfw3.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 #include "Renderer.hpp"
 #include "IndexBuffer.hpp"
@@ -13,7 +14,7 @@ void enableDebugger();
 
 int main(void)
 {
-    Renderer renderer(1920, 1080);
+    Renderer renderer(1920, 1080, 30.0);
 
     float pos[16] = {
           -0.5, -0.5, 0.0, 0.0,
@@ -24,8 +25,8 @@ int main(void)
 
      float vertices[32] = {
     // positions          // colors           // texture coords
-     0.5f,  0.5f, -4.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, -4.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+     0.5f,  0.5f, -2.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, -2.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
     -0.5f, -0.5f, -2.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
     -0.5f,  0.5f, -2.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     }; 
@@ -76,23 +77,35 @@ int main(void)
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     //float r = 0.0;
+    float lastTime = 0.0, deltaTime = 0.0;
     while (!glfwWindowShouldClose(renderer.getWindow()) )
     {
-        renderer.clear();
+        float currentTime = glfwGetTime();
 
+        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(renderer.getWindow(), true);
+
+        if(currentTime - lastTime < renderer.getTargetTime()){
+            glfwPollEvents();
+            continue;
+        }
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+
+        renderer.clear();
        // shader.setVec4f(r, 0.0, 0.0, 1.0);
-       //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 1.0f));
-       //shader.setMat4f("u_Rotation", trans);
+       glm::mat4 rot = glm::rotate(trans, (float)glfwGetTime() , glm::vec3(1.0f, 0.0f, 0.0f));
+       shader.setMat4f("u_Rotation", rot);
         
         glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
         //if(r >=1.0) r = 0.0;
         //r += 0.05;
-
         glfwSwapBuffers(renderer.getWindow());
-
         glfwPollEvents();
     }
 
+    std::cout << glfwGetTime() << std::endl;
     glfwTerminate();
     return 0;
 }

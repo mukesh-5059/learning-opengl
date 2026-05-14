@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <iostream>
 
-Renderer::Renderer(int width, int height)
- : width(width), height(height){
+Renderer::Renderer(int width, int height, float targetFps)
+ : width(width), height(height), targetFps(targetFps){
+
+    targetFrametime = 1.0 / targetFps;
     if (!glfwInit())
         exit(-1);
 
@@ -18,7 +20,7 @@ Renderer::Renderer(int width, int height)
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     int version = gladLoadGL();
     if (version == 0) {
