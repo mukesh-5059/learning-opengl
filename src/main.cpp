@@ -11,7 +11,7 @@ void enableDebugger();
 
 int main(void)
 {
-    Renderer renderer(640, 480);
+    Renderer renderer(1920, 1080);
 
     float pos[16] = {
           -0.5, -0.5, 0.0, 0.0,
@@ -21,7 +21,7 @@ int main(void)
     };
 
     float vertices[24] = {
-    // positions         // colors
+    // positions                         // colors
       0.5f,  -0.5f,  0.0f,   1.0f,  0.0f,  0.0f, 0.0,  0.0,   // bottom right
      -0.5f,  -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,1.0, 0.0,  // bottom left
      0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,0.5, 1.0   // top 
@@ -41,8 +41,11 @@ int main(void)
     va1.bindLayout(vb, vl);
     va1.bind();
 
-    Texture texture("res/textures/wall.jpg");
-    texture.bind();
+    Texture texture1("res/textures/wall.jpg");
+    Texture texture2("res/textures/logo.png");
+    
+    texture2.bind(1);
+    texture1.bind();
 
     IndexBuffer ibo(indices, 3);
     ibo.bind();
@@ -50,8 +53,11 @@ int main(void)
     ShaderProgram shader("res/shaders/vertex.shader", "res/shaders/fragment.shader");
     shader.bind();
 
-    shader.setInt("u_Texture", 0);
+    shader.setInt("u_Texture1", 0);
+    shader.setInt("u_Texture2", 1);
     
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     //float r = 0.0;
     while (!glfwWindowShouldClose(renderer.getWindow()) )
