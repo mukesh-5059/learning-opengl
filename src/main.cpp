@@ -117,15 +117,16 @@ int main(void)
        shader.setMat4f("u_ModelMatrix", rot);
        
        if(show_another_window){
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
+            ImGui::Begin("Frame per sec", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("dt: %.3f ms/frame", deltaTime * 1000);
+            ImGui::Text("FPS: %.1f", 1/deltaTime);
             if (ImGui::Button("Close Me"))
                 show_another_window = false;
             ImGui::End();
        }
 
         ImGui::Begin("Control panel");
-        if(ImGui::Button("Another window")) show_another_window = !show_another_window;
+        ImGui::Checkbox("Fps", &show_another_window);
         ImGui::End();
        
         glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
