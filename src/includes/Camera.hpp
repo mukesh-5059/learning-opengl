@@ -1,18 +1,21 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
+#include "Renderer.hpp"
 
 class Camera{
     glm::vec3 pos, up, direction;
-    float speed;
+    float speed, fov;
+    Renderer renderer;
 
     public:
-    Camera();
+    Camera(Renderer &renderer);
     
-    void input(GLFWwindow* window, float dt);
+    void captureInput(float dt);
     void setPosition(glm::vec3 pos);
     void setDirection(glm::vec3 direction);
     glm::mat4 getLookAt();
+    glm::mat4 getProj();
 
     glm::vec3 getPos(){return pos;}
     glm::vec3 getDirection(){return direction;}

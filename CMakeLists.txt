@@ -7,7 +7,12 @@ find_package(OpenGL REQUIRED)
 add_executable(game)
 
 target_sources(game PRIVATE 
-                src/main.cpp dependencies/lib/glad.c src/debugger.cpp
+                dependencies/lib/imgui/imgui.cpp dependencies/lib/imgui/imgui_tables.cpp
+                dependencies/lib/imgui/imgui_impl_glfw.cpp dependencies/lib/imgui/imgui_widgets.cpp
+                dependencies/lib/imgui/imgui_draw.cpp dependencies/lib/imgui/imgui_demo.cpp
+                dependencies/lib/imgui/imgui_impl_opengl3.cpp
+                dependencies/lib/glad.c src/debugger.cpp
+                src/main.cpp
                 src/IndexBuffer.cpp src/VertexBuffer.cpp src/VertexArray.cpp src/Shader.cpp
                 src/Renderer.cpp src/Texture.cpp
                 src/Camera.cpp)

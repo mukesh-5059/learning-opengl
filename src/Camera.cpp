@@ -1,15 +1,18 @@
 #include "Camera.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
-Camera::Camera()
+Camera::Camera(Renderer &renderer)
  :  up(glm::vec3(0.0, 1.0, 0.0)),
     direction(glm::vec3(0.0, 0.0, -1.0)),
     pos(glm::vec3(0.0)),
-    speed(2.0) {
+    speed(2.0),
+    fov(45.0),
+    renderer(renderer) {
 
 }
 
-void Camera::input(GLFWwindow* window, float dt){
+void Camera::captureInput(float dt){
+    GLFWwindow *window = renderer.getWindow();
     float speed = dt * this->speed;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         pos += speed * direction;
@@ -27,6 +30,11 @@ void Camera::input(GLFWwindow* window, float dt){
 
 glm::mat4 Camera::getLookAt(){
     return glm::lookAt(pos, pos+direction, up);
+}
+
+glm::mat4 Camera::getProj(){
+    return glm::perspective(glm::radians(fov),
+      (float)renderer.getWidth()/(float)renderer.getHeight(), 0.1f, 100.0f);
 }
 
 void Camera::setDirection(glm::vec3 direction){

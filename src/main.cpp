@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
 #include "Renderer.hpp"
 #include "IndexBuffer.hpp"
@@ -15,7 +18,7 @@ void enableDebugger();
 
 int main(void)
 {
-    Renderer renderer(1920, 1080, 30.0);
+    Renderer renderer(1920, 1080, 60.0);
 
     float pos[16] = {
           -0.5, -0.5, 0.0, 0.0,
@@ -59,27 +62,29 @@ int main(void)
     shader.bind();
 
     glm::mat4 baseMat(1.0);
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f),
-                     (float)renderer.getWidth()/(float)renderer.getHeight(), 0.1f, 100.0f);
+    glm::mat4 proj;
     //glm::mat4 proj = glm::ortho(-1.0, 1.0,
     //                 -0.5625, 0.5625, -1.0, 1.0);
     glm::mat4 trans = glm::translate(baseMat, glm::vec3(0.0f, 0.0f, -2.0f));
     //printMat4(proj);
-    Camera camera;
+    Camera camera(renderer);
     
 
     shader.setInt("u_Texture1", 0);
     shader.setInt("u_Texture2", 1);
-    shader.setMat4f("u_MVP", proj);
-
+    
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(renderer.getWindow(), true);
+    ImGui_ImplOpenGL3_Init();
+    ImGui::StyleColorsDark();
     //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
     //shader.setMat4f("u_Rotation", trans);
     
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    //float r = 0.0;
+
     float lastTime = 0.0, deltaTime = 0.0;
+    bool show_another_window = true;
     while (!glfwWindowShouldClose(renderer.getWindow()) )
     {
         float currentTime = glfwGetTime();
@@ -91,30 +96,51 @@ int main(void)
             glfwPollEvents();
             continue;
         }
-
-        camera.input(renderer.getWindow(), deltaTime);
-
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
+        camera.captureInput( deltaTime);
+        proj = camera.getProj();
+        shader.setMat4f("u_MVP", proj);
+        
         //std::cout << deltaTime << std::endl;
         renderer.clear();
-       // shader.setVec4f(r, 0.0, 0.0, 1.0);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
        glm::mat4 rot = glm::rotate(trans, (float)glfwGetTime() , glm::vec3(0.0f, 0.0f, 1.0f));
        glm::mat4 lookAt = camera.getLookAt();
        //glm::mat4 lookAt = glm::translate(baseMat, -camera.getPos());
        shader.setMat4f("u_LookAt", lookAt);
        shader.setMat4f("u_ModelMatrix", rot);
        
-        
+       if(show_another_window){
+            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+                show_another_window = false;
+            ImGui::End();
+       }
+
+        ImGui::Begin("Control panel");
+        if(ImGui::Button("Another window")) show_another_window = !show_another_window;
+        ImGui::End();
+       
         glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
-        //if(r >=1.0) r = 0.0;
-        //r += 0.05;
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(renderer.getWindow());
         glfwPollEvents();
     }
 
     std::cout << glfwGetTime() << std::endl;
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
 }
