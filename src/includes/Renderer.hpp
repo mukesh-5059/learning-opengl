@@ -15,7 +15,7 @@ class Renderer{
     void clear();
     void draw();
 
-    GLFWwindow* getWindow();
+    GLFWwindow* getWindow(){return window;}
     int getWidth(){return width;}
     int getHeight(){return height;}
     float getTargetTime(){return targetFrametime;}

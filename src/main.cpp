@@ -9,6 +9,7 @@
 #include "VertexArray.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
+#include "Camera.hpp"
 
 void enableDebugger();
 
@@ -25,10 +26,10 @@ int main(void)
 
      float vertices[32] = {
     // positions          // colors           // texture coords
-     0.5f,  0.5f, -2.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, -2.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, -2.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, -2.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     }; 
 
     unsigned int indices[] = {
@@ -57,13 +58,14 @@ int main(void)
     ShaderProgram shader("res/shaders/vertex.shader", "res/shaders/fragment.shader");
     shader.bind();
 
-    glm::mat4 trans(1.0);
+    glm::mat4 baseMat(1.0);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f),
                      (float)renderer.getWidth()/(float)renderer.getHeight(), 0.1f, 100.0f);
     //glm::mat4 proj = glm::ortho(-1.0, 1.0,
     //                 -0.5625, 0.5625, -1.0, 1.0);
-    //trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    glm::mat4 trans = glm::translate(baseMat, glm::vec3(0.0f, 0.0f, -2.0f));
     //printMat4(proj);
+    Camera camera;
     
 
     shader.setInt("u_Texture1", 0);
@@ -71,7 +73,7 @@ int main(void)
     shader.setMat4f("u_MVP", proj);
 
     //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-    shader.setMat4f("u_Rotation", trans);
+    //shader.setMat4f("u_Rotation", trans);
     
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -89,14 +91,21 @@ int main(void)
             glfwPollEvents();
             continue;
         }
+
+        camera.input(renderer.getWindow(), deltaTime);
+
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-
+        //std::cout << deltaTime << std::endl;
         renderer.clear();
        // shader.setVec4f(r, 0.0, 0.0, 1.0);
-       glm::mat4 rot = glm::rotate(trans, (float)glfwGetTime() , glm::vec3(1.0f, 0.0f, 0.0f));
-       shader.setMat4f("u_Rotation", rot);
+       glm::mat4 rot = glm::rotate(trans, (float)glfwGetTime() , glm::vec3(0.0f, 0.0f, 1.0f));
+       glm::mat4 lookAt = camera.getLookAt();
+       //glm::mat4 lookAt = glm::translate(baseMat, -camera.getPos());
+       shader.setMat4f("u_LookAt", lookAt);
+       shader.setMat4f("u_ModelMatrix", rot);
+       
         
         glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
         //if(r >=1.0) r = 0.0;
