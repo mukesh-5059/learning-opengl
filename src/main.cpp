@@ -48,8 +48,13 @@ int main(void)
     ImGui::StyleColorsDark();
     
     float lastTime = 0.0, deltaTime = 0.0;
-    bool showFpsWindow = true;
-    int n = 10;
+    bool showFpsWindow = true, lightingWindow = true, enableRotation = false;
+    int n = 1;
+
+    glm::vec3 lightColor(1.0);
+    float ambientStrength = 0.1f, specularStrength = 0.5f;
+    glm::vec3 lightPos(0.0);
+
     while (!glfwWindowShouldClose(renderer.getWindow()) )
     {
         float currentTime = glfwGetTime();
@@ -77,34 +82,52 @@ int main(void)
        
        glm::mat4 lookAt = camera.getViewMatrix();
        shader.setMat4f("u_LookAt", lookAt);
+       shader.setVec3f("u_CameraPos", camera.getPosition());
 
        
 
         for(int i = 0; i<n; i++){
             for(int j = 0; j<n; j++){
                 for(int k = 0; k<n; k++){
-                    cube.draw(glm::vec3(i * 2.0f, j * 2.0f, k * -2.0f), (float)glfwGetTime(), shader);
+                    cube.draw(glm::vec3(i * 2.0f, j * 2.0f, k * -2.0f), (float)glfwGetTime() * enableRotation, shader);
                 }
             }
         }
+
+        cube.draw(lightPos, 0, shader);
        
        if(showFpsWindow){
-            ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Frame per sec", &showFpsWindow, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::Begin("Frame per sec", &showFpsWindow);
             ImGui::Text("dt: %.3f ms/frame", deltaTime * 1000);
             ImGui::Text("FPS: %.1f", 1/deltaTime);
+            ImGui::Text("Runtime: %.2f", glfwGetTime());
+            ImGui::End();
+       }
+       
+       if(lightingWindow){
+            ImGui::Begin("Lighting");
+            ImGui::ColorPicker3("Ligt Color", &lightColor.x);
+            ImGui::SliderFloat("Ambient Strength", &ambientStrength, 0.0, 1.0);
+            ImGui::SliderFloat("Specular Strength", &specularStrength, 0.0, 1.0);
+            ImGui::SliderFloat3("Light Pos", &lightPos.x, -n * 2.0, n * 2.0);
             ImGui::End();
        }
 
-        ImGui::SetNextWindowPos(ImVec2(10, 80), ImGuiCond_FirstUseEver);
+       shader.setVec3f("u_LightColor", lightColor);
+       shader.setFloat("u_AmbientStrength", ambientStrength);
+       shader.setFloat("u_SpecularStrength", specularStrength);
+       shader.setVec3f("u_LightPos", lightPos);
+
         ImGui::Begin("Control panel", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Checkbox("Fps", &showFpsWindow);
+        ImGui::Checkbox("Lighting controls", &lightingWindow);
         if(ImGui::Button("Reset Camera pos")){
             camera.setRotation(-90.0f, 0.0f);
             camera.setPosition(glm::vec3(0.0f));
         }
         ImGui::SliderInt("n : ", &n, 0, 100);
         ImGui::Text("No. of cubes on screen: %d", n*n*n);
+        ImGui::Checkbox("Rotation: ", &enableRotation);
         ImGui::End();
        
         

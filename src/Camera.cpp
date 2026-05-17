@@ -5,7 +5,7 @@
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : pos(position), worldUp(up), yaw(yaw), pitch(pitch), 
-      movementSpeed(2.5f), mouseSensitivity(0.1f), fov(45.0f), firstClick(true) {
+      movementSpeed(3.5f), mouseSensitivity(0.1f), fov(45.0f), firstClick(true) {
     updateCameraVectors();
 }
 

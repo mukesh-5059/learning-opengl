@@ -110,9 +110,9 @@ int ShaderProgram::getUniformLocation(std::string uniform){
     return location;
 }
 
-void ShaderProgram::setVec4f(std::string uniform, float v0, float v1, float v2, float v3){
+void ShaderProgram::setVec4f(std::string uniform, glm::vec4 vec4){
     int location = this->getUniformLocation(uniform);
-    glUniform4f(location, v0, v1, v2, v3);
+    glUniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w);
 }
 
 void ShaderProgram::setInt(std::string uniform, int n){
@@ -123,6 +123,16 @@ void ShaderProgram::setInt(std::string uniform, int n){
 void ShaderProgram::setMat4f(std::string uniform, glm::mat4 &mat){
     int location = this->getUniformLocation(uniform);
     glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]);
+}
+
+void ShaderProgram::setVec3f(std::string uniform, glm::vec3 vec3){
+    int location = this->getUniformLocation(uniform);
+    glUniform3f(location, vec3.x, vec3.y, vec3.z);
+}
+
+void ShaderProgram::setFloat(std::string uniform, float n){
+    int location = this->getUniformLocation(uniform);
+    glUniform1f(location, n);
 }
 
 ShaderProgram::~ShaderProgram(){

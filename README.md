@@ -20,6 +20,7 @@ https://learnopengl.com
 -textures
 -transformations
 -camera movement
+-lighting
 ```
 
 https://codesignal.com/learn/courses/opengl-fundamentals-your-first-triangle/lessons/adding-an-fps-limit
