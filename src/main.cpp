@@ -8,66 +8,35 @@
 #include "imgui/imgui_impl_opengl3.h"
 
 #include "Renderer.hpp"
-#include "IndexBuffer.hpp"
-#include "VertexArray.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
+#include "Cube.hpp"
 
 void enableDebugger();
 
 int main(void)
 {
     Renderer renderer(1920, 1080, 60.0);
+    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    float pos[16] = {
-          -0.5, -0.5, 0.0, 0.0,
-           0.5, -0.5, 1.0, 0.0,
-           0.5,  0.5, 1.0, 1.0,
-         -0.5, 0.5, 0.0, 1.0
-    };
-
-     float vertices[32] = {
-    // positions          // colors           // texture coords
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
-    }; 
-
-    unsigned int indices[] = {
-        0, 1, 2,
-        2, 3, 0
-    };
-
-    VertexArray va1;
-    VertexBuffer vb(vertices, 4 * 8 * sizeof(float));
-    VertexArrayLayout vl;
-    vl.add(GL_FLOAT, 3, GL_FALSE);
-    vl.add(GL_FLOAT, 3, GL_FALSE);
-    vl.add(GL_FLOAT, 2, GL_FALSE);
-    va1.bindLayout(vb, vl);
-    va1.bind();
+    Cube cube;
 
     Texture texture1("res/textures/wall.jpg");
-    Texture texture2("res/textures/logo.png");
+    Texture texture2("res/textures/face.png");
     
     texture2.bind(1);
     texture1.bind();
 
-    IndexBuffer ibo(indices, 6);
-    ibo.bind();
-
-    ShaderProgram shader("res/shaders/vertex.shader", "res/shaders/fragment.shader");
+    ShaderProgram shader("res/shaders/vertex.vert", "res/shaders/fragment.frag");
     shader.bind();
 
     glm::mat4 baseMat(1.0);
     glm::mat4 proj;
-    //glm::mat4 proj = glm::ortho(-1.0, 1.0,
-    //                 -0.5625, 0.5625, -1.0, 1.0);
-    glm::mat4 trans = glm::translate(baseMat, glm::vec3(0.0f, 0.0f, -2.0f));
-    //printMat4(proj);
-    Camera camera(renderer);
+
+    Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
     
 
     shader.setInt("u_Texture1", 0);
@@ -77,14 +46,10 @@ int main(void)
     ImGui_ImplGlfw_InitForOpenGL(renderer.getWindow(), true);
     ImGui_ImplOpenGL3_Init();
     ImGui::StyleColorsDark();
-    //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-    //shader.setMat4f("u_Rotation", trans);
     
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     float lastTime = 0.0, deltaTime = 0.0;
-    bool show_another_window = true;
+    bool showFpsWindow = true;
+    int n = 10;
     while (!glfwWindowShouldClose(renderer.getWindow()) )
     {
         float currentTime = glfwGetTime();
@@ -99,37 +64,50 @@ int main(void)
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        camera.captureInput( deltaTime);
-        proj = camera.getProj();
+        camera.captureInput(renderer.getWindow(), deltaTime);
+        proj = camera.getProjectionMatrix(renderer.getWidth(), renderer.getHeight());
         shader.setMat4f("u_MVP", proj);
         
-        //std::cout << deltaTime << std::endl;
         renderer.clear();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-       glm::mat4 rot = glm::rotate(trans, (float)glfwGetTime() , glm::vec3(0.0f, 0.0f, 1.0f));
-       glm::mat4 lookAt = camera.getLookAt();
-       //glm::mat4 lookAt = glm::translate(baseMat, -camera.getPos());
-       shader.setMat4f("u_LookAt", lookAt);
-       shader.setMat4f("u_ModelMatrix", rot);
        
-       if(show_another_window){
-            ImGui::Begin("Frame per sec", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+       glm::mat4 lookAt = camera.getViewMatrix();
+       shader.setMat4f("u_LookAt", lookAt);
+
+       
+
+        for(int i = 0; i<n; i++){
+            for(int j = 0; j<n; j++){
+                for(int k = 0; k<n; k++){
+                    cube.draw(glm::vec3(i * 2.0f, j * 2.0f, k * -2.0f), (float)glfwGetTime(), shader);
+                }
+            }
+        }
+       
+       if(showFpsWindow){
+            ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Frame per sec", &showFpsWindow, ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::Text("dt: %.3f ms/frame", deltaTime * 1000);
             ImGui::Text("FPS: %.1f", 1/deltaTime);
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
             ImGui::End();
        }
 
-        ImGui::Begin("Control panel");
-        ImGui::Checkbox("Fps", &show_another_window);
+        ImGui::SetNextWindowPos(ImVec2(10, 80), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Control panel", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Checkbox("Fps", &showFpsWindow);
+        if(ImGui::Button("Reset Camera pos")){
+            camera.setRotation(-90.0f, 0.0f);
+            camera.setPosition(glm::vec3(0.0f));
+        }
+        ImGui::SliderInt("n : ", &n, 0, 100);
+        ImGui::Text("No. of cubes on screen: %d", n*n*n);
         ImGui::End();
        
-        glDrawElements(GL_TRIANGLES, ibo.getCount(), GL_UNSIGNED_INT, NULL);
+        
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -142,6 +120,7 @@ int main(void)
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+    glfwDestroyWindow(renderer.getWindow());
     glfwTerminate();
     return 0;
 }

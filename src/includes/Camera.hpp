@@ -1,25 +1,41 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
-#include "Renderer.hpp"
 
-class Camera{
-    glm::vec3 pos, up, direction;
-    float speed, fov;
-    Renderer renderer;
+class Camera {
+private:
+    glm::vec3 pos;
+    glm::vec3 front;
+    glm::vec3 up;
+    glm::vec3 right;
+    glm::vec3 worldUp;
 
-    public:
-    Camera(Renderer &renderer);
+    float yaw;
+    float pitch;
+
+    float movementSpeed;
+    float mouseSensitivity;
+    float fov;
+
+    bool firstClick;
+
+    void updateCameraVectors();
+
+public:
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), 
+           glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), 
+           float yaw = -90.0f, 
+           float pitch = 0.0f);
+
+    void captureInput(GLFWwindow* window, float dt);
     
-    void captureInput(float dt);
-    void setPosition(glm::vec3 pos);
-    void setDirection(glm::vec3 direction);
-    glm::mat4 getLookAt();
-    glm::mat4 getProj();
+    glm::mat4 getViewMatrix();
+    glm::mat4 getProjectionMatrix(int width, int height);
 
-    glm::vec3 getPos(){return pos;}
-    glm::vec3 getDirection(){return direction;}
-    float getSpeed(){return speed;}
-
-    ~Camera();
+    glm::vec3 getPosition() const { return pos; }
+    void setPosition(glm::vec3 newPos) { pos = newPos; }
+    void setRotation(float newYaw, float newPitch);
+    
+    float getSpeed() const { return movementSpeed; }
+    void setSpeed(float speed) { movementSpeed = speed; }
 };
