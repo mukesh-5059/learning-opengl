@@ -9,7 +9,7 @@
 
 #include "Renderer.hpp"
 #include "Shader.hpp"
-//#include "Texture.hpp"
+#include "Texture.hpp"
 #include "Camera.hpp"
 #include "Cube.hpp"
 
@@ -24,13 +24,16 @@ int main(void)
 
     Cube cube;
 
-    //Texture texture1("res/textures/wall.jpg");
-    //Texture texture2("res/textures/face.png");
+    Texture texture1("res/textures/container_diffuse.png");
+    Texture texture2("res/textures/container_specular.png");
+    Texture texture3("res/textures/matrix.jpg");
     
-    //texture2.bind(1);
-    //texture1.bind();
+    texture1.bind();
+    texture2.bind(1);
+    texture3.bind(2);
 
     ShaderProgram shader("res/shaders/vertex.vert", "res/shaders/fragment.frag");
+    ShaderProgram lightShader("res/shaders/vertex.vert", "res/shaders/lightCube.frag");
     shader.bind();
 
     glm::mat4 baseMat(1.0);
@@ -38,9 +41,6 @@ int main(void)
 
     Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
     
-
-    //shader.setInt("u_Texture1", 0);
-    //shader.setInt("u_Texture2", 1);
     
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(renderer.getWindow(), true);
@@ -52,9 +52,9 @@ int main(void)
     int n = 1;
 
 
-    shader.setVec3f("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-    shader.setVec3f("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-    shader.setVec3f("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    shader.setInt("material.diffuse_map", 0);
+    shader.setInt("material.specular_map", 1);
+    shader.setInt("material.emmision_map", 2);
     shader.setFloat("material.shininess", 32.0f);
 
     glm::vec3 lightPos(0.0);
@@ -76,6 +76,7 @@ int main(void)
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
+        shader.bind();
         camera.captureInput(renderer.getWindow(), deltaTime);
         proj = camera.getProjectionMatrix(renderer.getWidth(), renderer.getHeight());
         shader.setMat4f("u_MVP", proj);
@@ -101,7 +102,7 @@ int main(void)
             }
         }
 
-        cube.draw(lightPos, 0, shader);
+        
        
        if(showFpsWindow){
             ImGui::Begin("Frame per sec", &showFpsWindow);
@@ -118,6 +119,11 @@ int main(void)
        }
 
        shader.setVec3f("light.pos", lightPos);
+
+       lightShader.bind();
+       lightShader.setMat4f("u_MVP", proj);
+       lightShader.setMat4f("u_LookAt", lookAt);
+       cube.draw(lightPos, 0, lightShader);
 
         ImGui::Begin("Control panel", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Checkbox("Fps", &showFpsWindow);

@@ -1,9 +1,9 @@
 #version 330 core
 
 struct Material{
-   vec3 ambient;
-   vec3 diffuse;
-   vec3 specular;
+   sampler2D diffuse_map;
+   sampler2D specular_map;
+   sampler2D emmision_map;
    float shininess;
 };
 
@@ -34,9 +34,9 @@ void main(){
    vec3 reflectDir = reflect(-lightDir.xyz, normal);
    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
-   vec3 ambient  = light.ambient * material.ambient;
-   vec3 diffuse  = light.diffuse * (diff * material.diffuse);
-   vec3 specular = light.specular * (spec * material.specular); 
+   vec4 ambient  = vec4(light.ambient, 1.0) * texture(material.diffuse_map, textureCords);
+   vec4 diffuse  = vec4(light.diffuse, 1.0) * diff * texture(material.diffuse_map, textureCords);
+   vec4 specular = vec4(light.specular, 1.0) * spec * texture(material.specular_map, textureCords); 
 
-   FragColor = vec4(ambient + diffuse + specular, 1.0);
+   FragColor = ambient + diffuse + specular + texture(material.emmision_map, textureCords);
 }
