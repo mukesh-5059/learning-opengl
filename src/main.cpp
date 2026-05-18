@@ -26,7 +26,7 @@ int main(void)
 
     Texture texture1("res/textures/container_diffuse.png");
     Texture texture2("res/textures/container_specular.png");
-    Texture texture3("res/textures/matrix.jpg");
+    Texture texture3("res/textures/container_emmision.png");
     
     texture1.bind();
     texture2.bind(1);
