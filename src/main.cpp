@@ -9,7 +9,7 @@
 
 #include "Renderer.hpp"
 #include "Shader.hpp"
-#include "Texture.hpp"
+//#include "Texture.hpp"
 #include "Camera.hpp"
 #include "Cube.hpp"
 
@@ -24,11 +24,11 @@ int main(void)
 
     Cube cube;
 
-    Texture texture1("res/textures/wall.jpg");
-    Texture texture2("res/textures/face.png");
+    //Texture texture1("res/textures/wall.jpg");
+    //Texture texture2("res/textures/face.png");
     
-    texture2.bind(1);
-    texture1.bind();
+    //texture2.bind(1);
+    //texture1.bind();
 
     ShaderProgram shader("res/shaders/vertex.vert", "res/shaders/fragment.frag");
     shader.bind();
@@ -39,8 +39,8 @@ int main(void)
     Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
     
 
-    shader.setInt("u_Texture1", 0);
-    shader.setInt("u_Texture2", 1);
+    //shader.setInt("u_Texture1", 0);
+    //shader.setInt("u_Texture2", 1);
     
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(renderer.getWindow(), true);
@@ -51,9 +51,16 @@ int main(void)
     bool showFpsWindow = true, lightingWindow = true, enableRotation = false;
     int n = 1;
 
-    glm::vec3 lightColor(1.0);
-    float ambientStrength = 0.1f, specularStrength = 0.5f;
+
+    shader.setVec3f("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+    shader.setVec3f("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    shader.setVec3f("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    shader.setFloat("material.shininess", 32.0f);
+
     glm::vec3 lightPos(0.0);
+    shader.setVec3f("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
+    shader.setVec3f("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
+    shader.setVec3f("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
     while (!glfwWindowShouldClose(renderer.getWindow()) )
     {
@@ -106,17 +113,11 @@ int main(void)
        
        if(lightingWindow){
             ImGui::Begin("Lighting");
-            ImGui::ColorPicker3("Ligt Color", &lightColor.x);
-            ImGui::SliderFloat("Ambient Strength", &ambientStrength, 0.0, 1.0);
-            ImGui::SliderFloat("Specular Strength", &specularStrength, 0.0, 1.0);
             ImGui::SliderFloat3("Light Pos", &lightPos.x, -n * 2.0, n * 2.0);
             ImGui::End();
        }
 
-       shader.setVec3f("u_LightColor", lightColor);
-       shader.setFloat("u_AmbientStrength", ambientStrength);
-       shader.setFloat("u_SpecularStrength", specularStrength);
-       shader.setVec3f("u_LightPos", lightPos);
+       shader.setVec3f("light.pos", lightPos);
 
         ImGui::Begin("Control panel", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Checkbox("Fps", &showFpsWindow);
